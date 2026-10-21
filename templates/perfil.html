@@ -73,6 +73,17 @@
             <table class="tabela-historico">
                 <thead><tr><th>Rodada</th><th>Dezenas Escolhidas</th><th>Status</th></tr></thead>
                 <tbody id="corpo-bilhetes-antigos"></tbody>
+                        <!-- ... tabela de bilhetes registrados acima ... -->
+        </div>
+
+        <!-- 🔴 NOVO BOTÃO DE SAIR (COLE AQUI) -->
+        <div style="padding: 0 10px; margin-bottom: 30px;">
+            <button id="btn-sair-app" style="width: 100%; padding: 14px; background-color: #ff3333; color: #fff; font-weight: bold; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; transition: 0.2s;">Sair da Conta 🚪</button>
+        </div>
+
+        <!-- Barra de Menu Inferior Fixa -->
+        <div class="menu-inferior-fixo">
+
             </table>
         </div>
 
@@ -188,6 +199,15 @@
                     alert("✨ " + resposta.mensagem);
                 })
                 .catch(() => alert("Erro ao atualizar e-mail."));
+                            // 🔴 LÓGICA DO BOTÃO DE SAIR (COLE ANTES DO ÚLTIMO }); )
+            document.getElementById("btn-sair-app").addEventListener("click", function() {
+                if(confirm("Tem certeza que deseja sair do aplicativo?")) {
+                    localStorage.removeItem("usuario_cpf"); // Apaga o login da memória do celular
+                    alert("🚪 Você saiu da conta!");
+                    window.location.href = "/login"; // Joga o usuário direto para a tela de login
+                }
+            });
+
             });
         });
     </script>
