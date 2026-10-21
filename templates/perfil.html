@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil e Afiliados</title>
+    <link rel="stylesheet" href="/static/css/estilo.css">
+    <style>
+        .topo-perfil { text-align: center; padding: 20px 0; }
+        .wrapper-avatar { position: relative; display: inline-block; cursor: pointer; }
+        .avatar-foto { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #00e676; object-fit: cover; margin-bottom: 10px; transition: 0.2s; }
+        .wrapper-avatar:hover .avatar-foto { filter: brightness(70%); }
+        .txt-alterar-foto { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 11px; font-weight: bold; opacity: 0; transition: 0.2s; text-align: center; pointer-events: none; }
+        .wrapper-avatar:hover .txt-alterar-foto { opacity: 1; }
+        .secao-perfil { background-color: #1a1a1e; padding: 20px; border-radius: 10px; border: 1px solid #29292e; margin-bottom: 20px; text-align: left; }
+        .input-perfil { width: 100%; padding: 12px; background-color: #29292e; border: 1px solid #323238; color: #fff; border-radius: 6px; font-size: 15px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; }
+        .box-link-afiliado { background-color: #202024; padding: 12px; border-radius: 6px; border: 1px dashed #ffd700; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-weight: bold; color: #ffd700; font-size: 14px; }
+        .btn-copiar { background-color: #ffd700; color: #121214; padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .tabela-historico { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .tabela-historico th { background-color: #29292e; color: #8d8d99; padding: 10px; text-align: left; font-size: 13px; }
+        .tabela-historico td { padding: 12px 10px; border-bottom: 1px solid #29292e; font-size: 14px; }
+        .status-ganho { color: #00e676; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container-app">
+        <div class="topo-perfil">
+            <!-- Ao clicar nesta área, o input oculto de arquivo é disparado abrindo a galeria -->
+            <div class="wrapper-avatar" id="area-foto-perfil">
+                <img id="perfil-avatar" class="avatar-foto" src="/static/imagens/avatar_padrao.png" alt="Avatar">
+                <div class="txt-alterar-foto">ALTERAR<br>FOTO</div>
+                <!-- Input oculto do tipo FILE que aciona as fotos do celular -->
+                <input type="file" id="input-galeria-oculto" accept="image/*" style="display: none;">
+            </div>
+            <h3 id="perfil-nome" style="margin: 0; color: #fff;">Carregando...</h3>
+            <span style="color: #8d8d99; font-size: 13px;">Configurações da Conta</span>
+        </div>
+
+        <!-- 1. PAINEL DE DADOS CADASTRAIS -->
+        <div class="secao-perfil">
+            <h4 style="margin: 0 0 15px 0; color: #00e676;">Seus Dados</h4>
+            <label style="font-size: 13px; color: #8d8d99;">E-mail para Alertas:</label>
+            <input type="email" id="perfil-email" class="input-perfil" placeholder="seuemail@teste.com">
+            <button id="btn-salvar-perfil" class="btn-principal ativo" style="width: 100%; padding: 12px; font-size: 14px;">Salvar E-mail</button>
+        </div>
+
+        <!-- 2. PAINEL DO INDIQUE E GANHE (AFILIADOS) -->
+        <div class="secao-perfil">
+            <h4 style="margin: 0; color: #ffd700;">Indique e Ganhe 🎁</h4>
+            <p style="color: #8d8d99; font-size: 13px; margin: 5px 0 10px 0;">Ganhe R\$ 2,00 por amigo indicado que jogar. Amigos convidados: <span id="total-amigos" style="color: #fff; font-weight: bold;">0</span></p>
+            <span style="font-size: 13px; color: #8d8d99;">Seu Link de Convite Convencional:</span>
+            <div class="box-link-afiliado">
+                <span id="link-texto">carregando...</span>
+                <button id="btn-copiar-link" class="btn-copiar">Copiar</button>
+            </div>
+        </div>
+
+        <!-- 3. HISTÓRICO FINANCEIRO -->
+        <div class="secao-perfil">
+            <h4 style="margin: 0 0 10px 0; color: #fff;">Histórico Financeiro</h4>
+            <table class="tabela-historico">
+                <thead><tr><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead>
+                <tbody id="corpo-historico">
+                    <tr><td colspan="3" style="text-align: center; color: #8d8d99;">Nenhuma movimentação encontrada.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. HISTÓRICO DE BILHETES -->
+        <div class="secao-perfil">
+            <h4 style="margin: 0 0 10px 0; color: #ffd700;">🎰 Meus Bilhetes Registrados</h4>
+            <table class="tabela-historico">
+                <thead><tr><th>Rodada</th><th>Dezenas Escolhidas</th><th>Status</th></tr></thead>
+                <tbody id="corpo-bilhetes-antigos"></tbody>
+            </table>
+        </div>
+
+        <!-- Barra de Menu Inferior Fixa -->
+        <div class="menu-inferior-fixo">
+            <a href="/" class="aba-link"><span>🎲</span>Volante</a>
+            <a href="/ranking" class="aba-link"><span>🏆</span>Ranking</a>
+            <a href="/carteira" class="aba-link"><span>💳</span>Carteira</a>
+            <a href="/perfil" class="aba-link ativa"><span>👤</span>Perfil</a>
+        </div>
+    </div>
+
+        <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const CPF_LOGADO = localStorage.getItem("usuario_cpf") || "11310246645";
+            const labelNome = document.getElementById("perfil-nome");
+            const labelEmail = document.getElementById("perfil-email");
+            const labelAmigos = document.getElementById("total-amigos");
+            const labelAvatar = document.getElementById("perfil-avatar");
+            const labelLink = document.getElementById("link-texto");
+            const btnCopiar = document.getElementById("btn-copiar-link");
+            const tabelaFinanceira = document.getElementById("corpo-historico");
+            const tabelaBilhetes = document.getElementById("corpo-bilhetes-antigos");
+
+            // 1. Busca os dados do perfil ao carregar
+            fetch("/api/usuarios/perfil/" + CPF_LOGADO)
+                .then(res => res.json())
+                .then(dados => {
+                    labelNome.innerText = dados.nome;
+                    labelEmail.value = dados.email || "";
+                    labelAmigos.innerText = dados.total_indicados;
+                    
+                    if(dados.foto_url) {
+                        labelAvatar.src = dados.foto_url + "?t=" + new Date().getTime();
+                    }
+
+                    const linkCompleto = window.location.origin + "/cadastro?ref=" + dados.codigo_convite;
+                    labelLink.innerText = window.location.host + "/...=" + dados.codigo_convite;
+
+                    btnCopiar.onclick = function() {
+                        navigator.clipboard.writeText(linkCompleto);
+                        alert("🎉 Link de afiliado copiado com sucesso!");
+                    };
+
+                    if (dados.historico && dados.historico.length > 0) {
+                        tabelaFinanceira.innerHTML = "";
+                        dados.historico.forEach(item => {
+                            let classeStatus = item.tipo === 'Deposito' || item.tipo === 'Premio' ? 'status-ganho' : '';
+                            tabelaFinanceira.innerHTML += `<tr><td>${item.tipo}</td><td class="${classeStatus}">R$ ${item.valor.toFixed(2).replace('.', ',')}</td><td>${item.data}</td></tr>`;
+                        });
+                    }
+                })
+                .catch(err => console.log("Erro ao carregar dados do perfil: ", err));
+
+            // 2. DISPARAR A GALERIA DE FOTOS AO CLICAR NA IMAGEM
+            const areaFoto = document.getElementById("area-foto-perfil");
+            const inputOculto = document.getElementById("input-galeria-oculto");
+
+            areaFoto.addEventListener("click", () => inputOculto.click());
+
+            inputOculto.addEventListener("change", function() {
+                if (this.files && this.files[0]) {
+                    const arquivoFoto = this.files[0];
+                    const formData = new FormData();
+                    formData.append("file", arquivoFoto);
+
+                    fetch("/api/usuarios/perfil/upload-foto/" + CPF_LOGADO, {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(resposta => {
+                        if(resposta.sucesso) {
+                            alert("📸 Foto de perfil updated com sucesso!");
+                            labelAvatar.src = resposta.foto_url + "?t=" + new Date().getTime();
+                        } else {
+                            alert("❌ Erro no upload: " + resposta.detail);
+                        }
+                    })
+                    .catch(() => alert("Erro ao enviar imagem para o servidor."));
+                }
+            });
+
+            // 3. BUSCA A TABELA DE BILHETES REGISTRADOS
+            fetch("/api/jogos/historico-bilhetes/" + CPF_LOGADO)
+                .then(res => res.json())
+                .then(dados_b => {
+                    if(dados_b.sucesso && dados_b.bilhetes && dados_b.bilhetes.length > 0) {
+                        tabelaBilhetes.innerHTML = "";
+                        dados_b.bilhetes.forEach(b => {
+                            let classeStatus = b.status === 'Ativo' ? 'status-ganho' : '';
+                            tabelaBilhetes.innerHTML += `<tr><td>#${b.id_rodada}</td><td style='font-weight: bold; color: #fff;'>${b.dezenas}</td><td class='${classeStatus}'>${b.status}</td></tr>`;
+                        });
+                    } else {
+                        tabelaBilhetes.innerHTML = "<tr><td colspan='3' style='text-align: center; color: #8d8d99;'>Nenhum bilhete feito.</td></tr>";
+                    }
+                })
+                .catch(err => console.log("Erro ao buscar bilhetes: ", err));
+
+            // 4. SALVA APENAS AS ALTERAÇÕES DE E-MAIL
+            document.getElementById("btn-salvar-perfil").addEventListener("click", function() {
+                const email = labelEmail.value;
+                const srcBruto = labelAvatar.getAttribute("src") || "";
+                const fotoAtual = srcBruto.split("?")[0];
+
+                fetch("/api/usuarios/perfil/atualizar", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ cpf: CPF_LOGADO, email: email, foto_url: fotoAtual })
+                })
+                .then(res => res.json())
+                .then(resposta => {
+                    alert("✨ " + resposta.mensagem);
+                })
+                .catch(() => alert("Erro ao atualizar e-mail."));
+            });
+        });
+    </script>
+</body>
+</html>

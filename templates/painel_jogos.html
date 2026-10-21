@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volante de Apostas Digital</title>
+    <!-- Link para o arquivo de estilos que controla o design -->
+    <link rel="stylesheet" href="/static/css/estilo.css">
+</head>
+<body>
+
+    <div class="container-app">
+        <!-- Topo da Tela com Identificação e Saldo -->
+        <div class="topo-usuario">
+            <span id="nome-jogador">Carregando...</span>
+            <div class="saldo-box">Saldo: <span id="saldo-valor">R$ 0,00</span></div>
+                    <!-- Adicione esta linha logo abaixo do bloco div class="topo-usuario" no seu painel_jogos.html -->
+        <div style="text-align: right; margin-bottom: 15px;">
+            <a href="/tutorial" style="color: #ffd700; text-decoration: none; font-size: 14px; font-weight: bold;">📖 Como funciona o jogo?</a>
+        </div>
+
+        </div>
+
+        <h2>Escolha 6 Dezenas</h2>
+        <p class="subtitulo">Marque seus números para a rodada atual</p>
+
+        <!-- Contador de dezenas selecionadas -->
+        <div class="contador-dezenas">
+            Selecionados: <span id="contagem">0</span> / 6
+        </div>
+
+        <!-- Grade vazia que o JavaScript vai preencher com os 60 botões -->
+        <div class="grade-volante" id="volante"></div>
+
+        <!-- Botões de Ação Inferiores -->
+        <div class="botoes-acao">
+            <button id="btn-surpresinha" class="btn-secundario">Surpresinha 🎲</button>
+            <button id="btn-confirmar" class="btn-principal" disabled>Confirmar Jogo (R$ 10)</button>
+        </div>
+                <div class="menu-inferior-fixo">
+            <a href="/" class="aba-link ativa"><span>🎲</span>Volante</a>
+            <a href="/ranking" class="aba-link"><span>🏆</span>Ranking</a>
+            <a href="/carteira" class="aba-link"><span>💳</span>Carteira</a>
+            <a href="/perfil" class="aba-link"><span>👤</span>Perfil</a>
+
+        </div>
+    </div>
+
+    <!-- Script JavaScript que controla as ações da tela -->
+    <script src="/static/js/interacoes.js"></script>
+</body>
+</html>

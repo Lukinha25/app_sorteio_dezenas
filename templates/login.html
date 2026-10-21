@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar no App</title>
+    <link rel="stylesheet" href="/static/css/estilo.css">
+    <style>
+        .box-formulario { background-color: #1a1a1e; padding: 25px; border-radius: 10px; border: 1px solid #29292e; text-align: left; margin-top: 40px; }
+        .input-campo { width: 100%; padding: 14px; background-color: #29292e; border: 1px solid #323238; color: #fff; border-radius: 6px; font-size: 16px; margin: 8px 0 18px 0; box-sizing: border-box; }
+        .btn-enviar { width: 100%; padding: 15px; background-color: #00e676; color: #121214; font-weight: bold; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+        .link-alternativo { display: block; text-align: center; margin-top: 20px; color: #8d8d99; text-decoration: none; font-size: 14px; }
+        .link-alternativo span { color: #ffd700; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container-app">
+        <h2 style="margin-top: 60px; color: #00e676;">Bem-vindo de Volta!</h2>
+        <p class="subtitulo">Acesse sua carteira e faça suas apostas</p>
+
+        <div class="box-formulario">
+            <label for="login-cpf" style="font-size: 14px;">Seu CPF:</label>
+            <input type="text" id="login-cpf" class="input-campo" placeholder="Digite apenas os números" maxlength="11">
+
+            <label for="login-senha" style="font-size: 14px;">Sua Senha:</label>
+            <input type="password" id="login-senha" class="input-campo" placeholder="Digite sua senha">
+
+            <button id="btn-entrar" class="btn-enviar">Entrar no Aplicativo 🚀</button>
+        </div>
+
+        <a href="/cadastro" class="link-alternativo">Não tem uma conta? <span>Cadastre-se aqui</span></a>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("btn-entrar").addEventListener("click", function() {
+                const cpf = document.getElementById("login-cpf").value;
+                const senha = document.getElementById("login-senha").value;
+
+                if (!cpf || !senha) {
+                    alert("Preencha o CPF e a senha!");
+                    return;
+                }
+
+                // Salva temporariamente o CPF no navegador (simulação de sessão de login)
+                // Assim, o volante e a carteira vão ler o CPF de quem acabou de fazer login de verdade!
+                localStorage.setItem("usuario_cpf", cpf);
+                alert("🚀 Login efetuado com sucesso!");
+                window.location.href = "/"; // Entra no painel do volante
+            });
+        });
+    </script>
+</body>
+</html>

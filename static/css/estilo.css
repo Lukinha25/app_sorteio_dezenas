@@ -1,0 +1,146 @@
+body {
+    background-color: #121214; /* Fundo escuro estilo plataformas de apostas */
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.container-app {
+    width: 100%;
+    max-width: 420px; /* Largura perfeita simulando a tela de um smartphone */
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 20px;
+    background-color: #1a1a1e;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.topo-usuario {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #29292e;
+    padding: 12px 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.saldo-box {
+    color: #00e676; /* Verde dinheiro */
+}
+
+h2 { color: #ffd700; margin: 10px 0 5px 0; } /* Dourado da sorte */
+.subtitulo { color: #8d8d99; font-size: 14px; margin-top: 0; margin-bottom: 20px; }
+
+.contador-dezenas {
+    background-color: #202024;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    font-size: 16px;
+}
+#contagem { color: #ffd700; font-size: 20px; }
+
+/* Configuração do volante de 60 números: 5 colunas por linha */
+.grade-volante {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+/* Transforma cada número em uma bolinha de sorteio perfeita */
+.num-dezena {
+    background-color: #29292e;
+    color: #e1e1e6;
+    border: 1px solid #323238;
+    padding: 14px 0;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* Efeito visual de quando a dezena é selecionada */
+.num-dezena.selecionado {
+    background-color: #ffd700; /* Fica dourada brilhante */
+    color: #121214;
+    border-color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+}
+
+.botoes-acao {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-principal, .btn-secundario {
+    width: 50%;
+    padding: 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+}
+
+.btn-secundario { background-color: #29292e; color: #fff; border: 1px solid #323238; }
+
+/* Botão cinza apagado enquanto não houver 6 números selecionados */
+.btn-principal { background-color: #4c4c54; color: #8d8d99; cursor: not-allowed; }
+
+/* Botão acende em verde vivo liberando a compra */
+.btn-principal.ativo {
+    background-color: #00e676;
+    color: #121214;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 230, 118, 0.4);
+}
+/* =========================================================================
+   🟢 BARRA DE MENU INFERIOR FIXA (ESTILO APLICATIVO NATIVO)
+   ========================================================================= */
+.container-app {
+    padding-bottom: 80px !important; 
+    position: relative;
+}
+
+.menu-inferior-fixo {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 420px;
+    background-color: #202024;
+    border-top: 1px solid #323238;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    box-sizing: border-box;
+    z-index: 999;
+}
+
+.aba-link {
+    color: #8d8d99;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: 0.2s;
+}
+
+.aba-link span { font-size: 20px; }
+
+.aba-link:hover, .aba-link.ativa {
+    color: #00e676; /* Acende em verde brilhante */
+}

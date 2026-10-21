@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Carteira Digital</title>
+    <link rel="stylesheet" href="/static/css/estilo.css">
+    <style>
+        .box-saldo-grande { background-color: #202024; padding: 25px; border-radius: 12px; margin-bottom: 25px; text-align: center; border: 1px solid #323238; }
+        .valor-grande { color: #00e676; font-size: 32px; font-weight: bold; margin-top: 5px; }
+        .secao-financeira { background-color: #1a1a1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #29292e; text-align: left; }
+        .input-financeiro { width: 100%; padding: 12px; background-color: #29292e; border: 1px solid #323238; color: #fff; border-radius: 6px; font-size: 16px; margin: 10px 0 15px 0; box-sizing: border-box; }
+        .btn-acao-financeira { width: 100%; padding: 14px; background-color: #00e676; color: #121214; font-weight: bold; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+        .btn-saque { background-color: #ffd700; }
+    </style>
+</head>
+<body>
+
+    <div class="container-app">
+        <div class="topo-usuario">
+            <span>💳 Carteira Digital</span>
+            <a href="/" style="color: #ffd700; text-decoration: none; font-size: 14px;">Voltar ao Volante</a>
+        </div>
+
+        <!-- Exibição do Saldo do Usuário -->
+        <div class="box-saldo-grande">
+            <span style="color: #8d8d99; font-size: 15px;">Seu Saldo Disponível:</span>
+            <div class="valor-grande" id="saldo-carteira">R$ 0,00</div>
+        </div>
+
+        <!-- Área de Depósito Dinâmico -->
+
+        <div class="secao-financeira">
+            <h3 style="margin-top: 0; color: #00e676;">Depositar via PIX</h3>
+            <p style="color: #8d8d99; font-size: 13px; margin: 0;">Coloque R$ 20 ou mais e ganhe R$ 10 de bônus! 🎁</p>
+            <label for="valor-deposito" style="font-size: 14px; display:block; margin-top:10px;">Valor do Depósito (R$):</label>
+            <input type="number" id="valor-deposito" class="input-financeiro" value="20.00" min="10">
+            <button id="btn-gerar-pix" class="btn-acao-financeira">Gerar QR Code PIX</button>
+        </div>
+                <!-- ADICIONE ESSE BLOCO EXATAMENTE ABAIXO DO BOTÃO "Gerar QR Code PIX" NO SEU carteira.html -->
+        <div id="bloco-visual-pix" style="display: none; background-color: #202024; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; border: 1px dashed #00e676;">
+            <p style="color: #00e676; font-size: 14px; font-weight: bold; margin-top: 0;">Pix Gerado com Sucesso! 💸</p>
+            <img id="img-qrcode-tela" src="" style="width: 150px; height: 150px; background-color: #fff; padding: 5px; border-radius: 4px; margin-bottom: 10px;">
+            <input type="text" id="input-copia-cola" readonly style="width: 100%; padding: 8px; background-color: #1a1a1e; border: 1px solid #323238; color: #8d8d99; border-radius: 4px; font-size: 11px; text-align: center; margin-bottom: 8px;">
+            <button id="btn-copiar-chave" style="background-color: #29292e; color: #fff; border: 1px solid #323238; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">Copiar Código Copia e Cola</button>
+        </div>
+
+        <!-- Área de Saque Dinâmico -->
+        <div class="secao-financeira">
+            <h3 style="margin-top: 0; color: #ffd700;">Solicitar Saque</h3>
+            <label for="chave-pix" style="font-size: 14px;">Sua Chave PIX (Deve ser seu CPF):</label>
+            <input type="text" id="chave-pix" class="input-financeiro" placeholder="000.000.000-00">
+            <label for="valor-saque" style="font-size: 14px;">Valor do Saque (R$):</label>
+            <input type="number" id="valor-saque" class="input-financeiro" placeholder="0.00">
+            <button id="btn-solicitar-saque" class="btn-acao-financeira btn-saque">Transferir para minha conta</button>
+        </div>
+
+        <!-- Barra de Menu Inferior Fixa -->
+        <div class="menu-inferior-fixo">
+            <a href="/" class="aba-link"><span>🎲</span>Volante</a>
+            <a href="/ranking" class="aba-link"><span>🏆</span>Ranking</a>
+            <a href="/carteira" class="aba-link ativa"><span>💳</span>Carteira</a>
+            <a href="/perfil" class="aba-link"><span>👤</span>Perfil</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Busca o CPF ativo da sessão real de login
+            const CPF_LOGADO = localStorage.getItem("usuario_cpf") || "12345678909";
+            const labelSaldo = document.getElementById("saldo-carteira");
+
+            // Atualiza o saldo buscando do Python usando a variável correta
+            fetch("/api/carteira/saldo/" + CPF_LOGADO)
+                .then(res => res.json())
+                .then(dados => {
+                    if (dados.sucesso) {
+                        labelSaldo.innerText = "R$ " + dados.saldo.toFixed(2).replace('.', ',');
+                    }
+                });
+
+            // Lógica corrigida para o botão de gerar depósito via Pix
+                       // SUBSTITUA APENAS A LOGICA DO "btn-gerar-pix" DENTRO DA TAG SCRIPT DO SEU carteira.html
+            document.getElementById("btn-gerar-pix").addEventListener("click", function() {
+                const valor = parseFloat(document.getElementById("valor-deposito").value);
+                
+                fetch("/api/carteira/depositar", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ cpf: CPF_LOGADO, valor: valor })
+                })
+                .then(res => res.json())
+                .then(dados => {
+                    if (dados.sucesso) {
+                        alert("🎉 " + dados.mensagem);
+                        
+                        // Liga a caixinha do Pix e injeta a imagem e o código vindo do Banco Inter
+                        document.getElementById("bloco-visual-pix").style.display = "block";
+                        document.getElementById("img-qrcode-tela").src = dados.qrcode_url;
+                        document.getElementById("input-copia-cola").value = dados.pix_copia_cola;
+                        
+                        // Configura o botão de copiar automático
+                        document.getElementById("btn-copiar-chave").onclick = function() {
+                            navigator.clipboard.writeText(dados.pix_copia_cola);
+                            alert("📋 Código Copia e Cola copiado! Cole no app do seu banco para pagar.");
+                        };
+                    }
+                });
+            });
+
+
+            // Lógica do botão de saque
+            document.getElementById("btn-solicitar-saque").addEventListener("click", function() {
+                const chave = document.getElementById("chave-pix").value;
+                const valor = document.getElementById("valor-saque").value;
+                if(!chave || !valor) {
+                    alert("Preencha a chave Pix e o valor para sacar!");
+                    return;
+                }
+                alert("🚀 Pedido de saque enviado! O dinheiro cairá na conta vinculada ao CPF em instantes.");
+            });
+        });
+    </script>
+</body>
+</html>

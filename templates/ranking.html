@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placar e Ranking ao Vivo</title>
+    <link rel="stylesheet" href="/static/css/estilo.css">
+    <style>
+        .resultado-box { background-color: #202024; padding: 15px; border-radius: 8px; margin-bottom: 25px; }
+        .bolas-container { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+        .bola-oficial { background-color: #00e676; color: #121214; font-weight: bold; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .tabela-ranking { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .tabela-ranking th { background-color: #29292e; color: #8d8d99; text-align: left; padding: 12px; font-size: 14px; }
+        .tabela-ranking td { padding: 12px; border-bottom: 1px solid #29292e; font-size: 15px; }
+        .badge-acertos { background-color: #ffd700; color: #121214; font-weight: bold; padding: 3px 8px; border-radius: 4px; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container-app">
+        <div class="topo-usuario">
+            <span>🏆 Central de Resultados</span>
+            <a href="/" style="color: #00e676; text-decoration: none; font-size: 14px;">Voltar ao Volante</a>
+        </div>
+        <div class="resultado-box">
+            <span style="color: #8d8d99; font-size: 14px;">Último Sorteio da Federal:</span>
+            <div class="bolas-container" id="container-bolas-federais"></div>
+        </div>
+        <h2>Ranking "Na Trave"</h2>
+        <p class="subtitulo">Jogadores com mais dezenas marcadas na rodada</p>
+        <table class="tabela-ranking">
+            <thead>
+                <tr><th>Jogador</th><th>Acertos</th></tr>
+            </thead>
+            <tbody id="corpo-tabela-ranking"></tbody>
+                <!-- ... tabela de ranking acima ... -->
+        </table>
+
+        <!-- NOVO BLOCO: CAIXA DO MURAL DA RODADA -->
+        <div class="resultado-box" style="margin-top: 30px; text-align: left;">
+            <h4 style="margin: 0 0 10px 0; color: #ffd700;">💬 Mural da Rodada</h4>
+            <div id="caixa-mensagens" style="max-height: 150px; overflow-y: auto; background-color: #1a1a1e; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 14px;">
+                <!-- Comentários aparecem aqui -->
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="input-msg-mural" placeholder="Comente algo com a galera..." style="flex: 1; padding: 10px; background-color: #29292e; border: 1px solid #323238; color: #fff; border-radius: 6px;">
+                <button id="btn-enviar-mural" style="background-color: #00e676; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">Enviar</button>
+            </div>
+        </div>
+
+        <!-- Barra de Menu Inferior Fixa -->
+        <div class="menu-inferior-fixo">
+            <a href="/" class="aba-link"><span>🎲</span>Volante</a>
+            <a href="/ranking" class="aba-link ativa"><span>🏆</span>Ranking</a>
+            <a href="/carteira" class="aba-link"><span>💳</span>Carteira</a>
+            <a href="/perfil" class="aba-link"><span>👤</span>Perfil</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const idRodada = 1;
+            const CPF_LOGADO = localStorage.getItem("usuario_cpf") || "12345678909";
+            const containerBolas = document.getElementById("container-bolas-federais");
+            const tabelaCorpo = document.getElementById("corpo-tabela-ranking");
+            const caixaMensagens = document.getElementById("caixa-mensagens");
+
+            // 1. CARREGA O RANKING E BOLINHAS
+            fetch(`/api/jogos/ranking/${idRodada}`)
+                .then(res => res.json())
+                .then(dados => {
+                    if (dados.sucesso) {
+                        fetch('/api/caixa/ultimo-sorteio').then(res_c => res_c.json()).then(dados_c => {
+                            dados_c.dezenas.forEach(num => {
+                                let bola = document.createElement("div");
+                                bola.classList.add("bola-oficial");
+                                bola.innerText = num < 10 ? "0" + num : num;
+                                containerBolas.appendChild(bola);
+                            });
+                        });
+                        if (dados.ranking.length === 0) {
+                            tabelaCorpo.innerHTML = `<tr><td colspan="2" style="color: #8d8d99; text-align: center;">Nenhum bilhete ativo correndo nesta rodada.</td></tr>`;
+                        } else {
+                            dados.ranking.forEach(jogador => {
+                                let linha = document.createElement("tr");
+                                linha.innerHTML = `<td>${jogador.nome}</td><td><span class="badge-acertos">${jogador.total_acertos} acertos</span></td>`;
+                                tabelaCorpo.appendChild(linha);
+                            });
+                        }
+                    }
+                });
+
+            // 2. CARREGA AS MENSAGENS DO MURAL DA GALERA
+            function atualizarMural() {
+                fetch("/api/mural/listar")
+                    .then(res => res.json())
+                    .then(dados => {
+                        caixaMensagens.innerHTML = "";
+                        if(dados.mensagens.length === 0) {
+                            caixaMensagens.innerHTML = `<span style="color: #8d8d99;">Nenhum comentário ainda. Seja o primeiro!</span>`;
+                        } else {
+                            dados.mensagens.forEach(m => {
+                                caixaMensagens.innerHTML += `<p style="margin: 4px 0;"><b>${m.nome}:</b> ${m.mensagem}</p>`;
+                            });
+                        }
+                    });
+            }
+            atualizarMural();
+
+            // 3. ENVIA UMA NOVA MENSAGEM NO MURAL
+            document.getElementById("btn-enviar-mural").addEventListener("click", function() {
+                const txt = document.getElementById("input-msg-mural").value;
+                if(!txt) return;
+                fetch("/api/mural/enviar", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ cpf: CPF_LOGADO, mensagem: txt })
+                }).then(() => {
+                    document.getElementById("input-msg-mural").value = "";
+                    atualizarMural();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
