@@ -44,9 +44,18 @@
             <a href="/perfil" class="aba-link"><span>👤</span>Perfil</a>
 
         </div>
+        <!-- SEU CÓDIGO DA LINHA 45 PARA CIMA CONTINUA IGUAL -->
     </div>
 
-    <!-- Script JavaScript que controla as ações da tela -->
+    <!-- 🛡️ BARREIRA DE SEGURANÇA DA TELA PRINCIPAL (COLE ESTE BLOCO AQUI NA LINHA 49) -->
+      <script>
+        const CPF_VERIFICAR = localStorage.getItem("usuario_cpf");
+        if (!CPF_VERIFICAR) {
+            window.location.href = "/login";
+        }
+    </script>
+
+    <!-- Script JavaScript que controla as ações da tela (O que já estava na linha 50) -->
     <script src="/static/js/interacoes.js"></script>
 </body>
 </html>
