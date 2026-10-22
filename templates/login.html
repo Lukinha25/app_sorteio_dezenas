@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+                document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("btn-entrar").addEventListener("click", function() {
                 const cpf = document.getElementById("login-cpf").value;
                 const senha = document.getElementById("login-senha").value;
@@ -43,13 +43,33 @@
                     return;
                 }
 
-                // Salva temporariamente o CPF no navegador (simulação de sessão de login)
-                // Assim, o volante e a carteira vão ler o CPF de quem acabou de fazer login de verdade!
-                localStorage.setItem("usuario_cpf", cpf);
-                alert("🚀 Login efetuado com sucesso!");
-                window.location.href = "/"; // Entra no painel do volante
+                // 🛡️ CONECTANDO COM A BARREIRA DE SEGURANÇA DO PYTHON
+                fetch("/api/usuarios/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ cpf: cpf, senha: senha })
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        return res.json().then(err => { throw new Error(err.detail); });
+                    }
+                    return res.json();
+                })
+                .then(dados => {
+                    if (dados.sucesso) {
+                        // Só salva na memória se o banco de dados aprovar!
+                        localStorage.setItem("usuario_cpf", cpf);
+                        alert("🚀 " + dados.mensagem);
+                        window.location.href = "/";
+                    }
+                })
+                .catch(erro => {
+                    // Dispara o pop-up vermelho travando o invasor na tela
+                    alert("❌ Erro no Login: " + erro.message);
+                });
             });
         });
+        
     </script>
 </body>
 </html>
