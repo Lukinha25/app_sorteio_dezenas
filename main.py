@@ -1,3 +1,4 @@
+from database import conectar_banco, inicializar_tabelas
 from financeiro.pix_inter import gerar_qrcode_pix_inter_real
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from jogos.bilhetes import registrar_aposta, buscar_historico_bilhetes
@@ -8,9 +9,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-
-from database import inicializar_tabelas
-# COPIE E SUBSTITUA ESSA LINHA NO TOPO DO SEU MAIN.PY
 from usuarios.gerenciar import cadastrar_novo_usuario, obter_dados_perfil_completo, atualizar_dados_cadastro
 from jogos.bilhetes import registrar_aposta
 from jogos.api_caixa import buscar_resultado_caixa
@@ -93,6 +91,36 @@ def rota_cadastrar(dados: FormularioCadastro):
     resultado = cadastrar_novo_usuario(dados.cpf, dados.nome, dados.senha, dados.codigo_indizacao)
     if not resultado["sucesso"]: raise HTTPException(status_code=400, detail=resultado["erro"])
     return resultado
+# COLE ESTE BLOCO EXATAMENTE LOGO ABAIXO DA ROTA DE CADASTRAR NO SEU MAIN.PY
+class FormularioLogin(BaseModel):
+    cpf: str
+    senha: str
+
+@app.post("/api/usuarios/login")
+def rota_login_oficial(dados: FormularioLogin):
+    """Verifica se o CPF e a Senha existem de verdade no banco de dados antes de liberar o acesso."""
+    # Remove pontos e traços do CPF enviado pela tela
+    cpf_limpo = "".join(c for c in dados.cpf if c.isdigit())
+    
+    conexao = conectar_banco()
+    cursor = conexao.cursor()
+    try:
+        # Busca o usuário cadastrado no arquivo de banco de dados (.db)
+        cursor.execute("SELECT cpf, senha_cripto FROM usuarios WHERE cpf = ?", (cpf_limpo,))
+        usuario = cursor.fetchone()
+        
+        # 🛡️ BARREIRA DE SEGURANÇA: Se o CPF não existir ou a senha estiver incorreta, bloqueia!
+        if not usuario or usuario["senha_cripto"] != dados.senha:
+            raise HTTPException(status_code=400, detail="CPF ou Senha incorretos! Crie uma conta se for novo.")
+            
+        return {"sucesso": True, "mensagem": "Login autorizado com sucesso! Bem-vindo ao app."}
+    except HTTPException as http_err:
+        raise http_err
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro interno de banco: {str(e)}")
+    finally:
+        conexao.close()
+
 
 @app.post("/api/jogos/comprar")
 def rota_comprar_jogo(dados: FormularioJogo):
