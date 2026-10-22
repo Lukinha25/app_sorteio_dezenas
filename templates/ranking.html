@@ -58,69 +58,108 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // 1. 🛡️ BARREIRA DE SEGURANÇA: Se não estiver logado, expulsa para o login
+            const CPF_LOGADO = localStorage.getItem("usuario_cpf");
+            if (!CPF_LOGADO) {
+                window.location.href = "/login";
+                return;
+            }
+
             const idRodada = 1;
-            const CPF_LOGADO = localStorage.getItem("usuario_cpf") || "12345678909";
             const containerBolas = document.getElementById("container-bolas-federais");
             const tabelaCorpo = document.getElementById("corpo-tabela-ranking");
             const caixaMensagens = document.getElementById("caixa-mensagens");
+            const tituloSorteio = document.getElementById("concurso-titulo");
 
-            // 1. CARREGA O RANKING E BOLINHAS
+            // 2. CARREGA O RANKING DOS JOGADORES DA RODADA
             fetch(`/api/jogos/ranking/${idRodada}`)
                 .then(res => res.json())
                 .then(dados => {
                     if (dados.sucesso) {
-                        fetch('/api/caixa/ultimo-sorteio').then(res_c => res_c.json()).then(dados_c => {
-                            dados_c.dezenas.forEach(num => {
-                                let bola = document.createElement("div");
-                                bola.classList.add("bola-oficial");
-                                bola.innerText = num < 10 ? "0" + num : num;
-                                containerBolas.appendChild(bola);
-                            });
-                        });
-                        if (dados.ranking.length === 0) {
-                            tabelaCorpo.innerHTML = `<tr><td colspan="2" style="color: #8d8d99; text-align: center;">Nenhum bilhete ativo correndo nesta rodada.</td></tr>`;
-                        } else {
-                            dados.ranking.forEach(jogador => {
-                                let linha = document.createElement("tr");
-                                linha.innerHTML = `<td>${jogador.nome}</td><td><span class="badge-acertos">${jogador.total_acertos} acertos</span></td>`;
-                                tabelaCorpo.appendChild(linha);
-                            });
+                        // 3. BUSCA E DESENHA AS BOLINHAS DA MEGA-SENA ATUALIZADAS
+                        fetch('/api/caixa/ultimo-sorteio')
+                            .then(res_c => res_c.json())
+                            .then(dados_c => {
+                                if (dados_c.sucesso && dados_c.dezenas) {
+                                    // Se existir o elemento de título do concurso, atualiza o texto
+                                    if (tituloSorteio) {
+                                        tituloSorteio.innerText = "Concurso #" + dados_c.concurso + " (" + dados_c.data + ")";
+                                    }
+                                    
+                                    if (containerBolas) {
+                                        containerBolas.innerHTML = ""; // Limpa o carregando antigo
+                                        // Divide os números usando o traço (-) do Python
+                                        const dezenas = dados_c.dezenas.split("-");
+                                        dezenas.forEach(num => {
+                                            let bola = document.createElement("div");
+                                                bola.classList.add("bola-oficial"); // 💡 Trocado para carregar o círculo amarelo do seu CSS
+                                                bola.innerText = num;
+                                            containerBolas.appendChild(bola);
+                                        });
+                                    }
+                                }
+                            })
+                            .catch(err => console.log("Erro ao carregar bolinhas: ", err));
+
+                        // 4. PREENCHE A TABELA DE CLASSIFICAÇÃO DOS ACERTOS
+                        if (tabelaCorpo) {
+                            tabelaCorpo.innerHTML = "";
+                            if (!dados.ranking || dados.ranking.length === 0) {
+                                tabelaCorpo.innerHTML = `<tr><td colspan="2" style="color: #8d8d99; text-align: center;">Nenhum bilhete ativo correndo nesta rodada.</td></tr>`;
+                            } else {
+                                dados.ranking.forEach(jogador => {
+                                    let linha = document.createElement("tr");
+                                    linha.innerHTML = `<td>${jogador.nome}</td><td><span class="badge-acertos">${jogador.total_acertos} acertos</span></td>`;
+                                    tabelaCorpo.appendChild(linha);
+                                });
+                            }
                         }
                     }
-                });
+                })
+                .catch(err => console.log("Erro ao carregar ranking: ", err));
 
-            // 2. CARREGA AS MENSAGENS DO MURAL DA GALERA
+            // 5. CARREGA AS MENSAGENS DO MURAL DA GALERA
             function atualizarMural() {
+                if (!caixaMensagens) return;
                 fetch("/api/mural/listar")
                     .then(res => res.json())
                     .then(dados => {
                         caixaMensagens.innerHTML = "";
-                        if(dados.mensagens.length === 0) {
+                        if(!dados.mensagens || dados.mensagens.length === 0) {
                             caixaMensagens.innerHTML = `<span style="color: #8d8d99;">Nenhum comentário ainda. Seja o primeiro!</span>`;
                         } else {
                             dados.mensagens.forEach(m => {
                                 caixaMensagens.innerHTML += `<p style="margin: 4px 0;"><b>${m.nome}:</b> ${m.mensagem}</p>`;
                             });
                         }
-                    });
+                    })
+                    .catch(err => console.log("Erro ao carregar mural: ", err));
             }
             atualizarMural();
 
-            // 3. ENVIA UMA NOVA MENSAGEM NO MURAL
-            document.getElementById("btn-enviar-mural").addEventListener("click", function() {
-                const txt = document.getElementById("input-msg-mural").value;
-                if(!txt) return;
-                fetch("/api/mural/enviar", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ cpf: CPF_LOGADO, mensagem: txt })
-                }).then(() => {
-                    document.getElementById("input-msg-mural").value = "";
-                    atualizarMural();
+            // 6. ENVIA UMA NOVA MENSAGEM NO MURAL AO CLICAR NO BOTÃO
+            const btnEnviarMural = document.getElementById("btn-enviar-mural");
+            if (btnEnviarMural) {
+                btnEnviarMural.addEventListener("click", function() {
+                    const inputMsg = document.getElementById("input-msg-mural");
+                    if (!inputMsg) return;
+                    const txt = inputMsg.value;
+                    if(!txt) return;
+
+                    fetch("/api/mural/enviar", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ cpf: CPF_LOGADO, mensagem: txt })
+                    })
+                    .then(res => res.json())
+                    .then(() => {
+                        inputMsg.value = "";
+                        atualizarMural();
+                    })
+                    .catch(err => console.log("Erro ao enviar mensagem: ", err));
                 });
-            });
+            }
         });
     </script>
 </body>
 </html>
-
