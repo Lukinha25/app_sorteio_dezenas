@@ -73,13 +73,11 @@
             <table class="tabela-historico">
                 <thead><tr><th>Rodada</th><th>Dezenas Escolhidas</th><th>Status</th></tr></thead>
                 <tbody id="corpo-bilhetes-antigos"></tbody>
-                        <!-- ... tabela de bilhetes registrados acima ... -->
-        </div>
-		
-        <!-- Barra de Menu Inferior Fixa -->
-        <div class="menu-inferior-fixo">
-
             </table>
+        </div>
+            <!-- 🔴 TABELA ACIMA / BOTÃO DE SAIR NOVO NO MEIO (COLE ESTE BLOCO AQUI) -->
+        <div style="padding: 0 10px; margin-bottom: 30px;">
+            <button id="btn-sair-app" style="width: 100%; padding: 14px; background-color: #ff3333; color: #fff; font-weight: bold; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; transition: 0.2s;">Sair da Conta 🚪</button>
         </div>
 
         <!-- Barra de Menu Inferior Fixa -->
@@ -89,15 +87,10 @@
             <a href="/carteira" class="aba-link"><span>💳</span>Carteira</a>
             <a href="/perfil" class="aba-link ativa"><span>👤</span>Perfil</a>
         </div>
-		<div style="padding: 0 10px; margin-bottom: 30px;">
-    <button id="btn-sair-app" style="width: 100%; padding: 14px; background-color: #ff3333; color: #fff; font-weight: bold; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; transition: 0.2s;">Sair da Conta 🚪</button>
-        </div>
+    </div>
 
-       </div>
-
-        <script>
-        1. 
-	• document.addEventListener("DOMContentLoaded", function() {
+            <script>
+        document.addEventListener("DOMContentLoaded", function() {
             const CPF_LOGADO = localStorage.getItem("usuario_cpf") || "11310246645";
             const labelNome = document.getElementById("perfil-nome");
             const labelEmail = document.getElementById("perfil-email");
@@ -157,7 +150,7 @@
                     .then(res => res.json())
                     .then(resposta => {
                         if(resposta.sucesso) {
-                            alert("📸 Foto de perfil updated com sucesso!");
+                            alert("📸 Foto de perfil atualizada com sucesso!");
                             labelAvatar.src = resposta.foto_url + "?t=" + new Date().getTime();
                         } else {
                             alert("❌ Erro no upload: " + resposta.detail);
@@ -183,11 +176,10 @@
                 })
                 .catch(err => console.log("Erro ao buscar bilhetes: ", err));
 
-                 // 4. SALVA APENAS AS ALTERAÇÕES DE E-MAIL (CORRIGIDO PARA NÃO TRAVAR O SITE)
+            // 4. SALVA AS ALTERAÇÕES DE E-MAIL
             document.getElementById("btn-salvar-perfil").addEventListener("click", function() {
                 const email = labelEmail.value;
-                                const srcBruto = labelAvatar.getAttribute("src") || "";
-                // Remove o cache (?t=...) de forma segura sem quebrar o link
+                const srcBruto = labelAvatar.getAttribute("src") || "";
                 const fotoAtual = srcBruto.split("?")[0];
 
                 fetch("/api/usuarios/perfil/atualizar", {
@@ -198,11 +190,17 @@
                 .then(res => res.json())
                 .then(resposta => {
                     alert("✨ " + resposta.mensagem);
-                    window.location.reload();
                 })
                 .catch(() => alert("Erro ao atualizar e-mail."));
             });
 
+            // 5. 🔴 LÓGICA DO BOTÃO VERMELHO DE SAIR
+            document.getElementById("btn-sair-app").addEventListener("click", function() {
+                if(confirm("Tem certeza que deseja sair do aplicativo?")) {
+                    localStorage.removeItem("usuario_cpf"); // Apaga o CPF da memória local
+                    alert("🚪 Você saiu da conta com sucesso!");
+                    window.location.href = "/login"; // Joga direto para o login
+                }
             });
         });
     </script>
