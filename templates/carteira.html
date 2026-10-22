@@ -64,62 +64,90 @@
         </div>
     </div>
 
-    <script>
+            <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Busca o CPF ativo da sessão real de login
-            const CPF_LOGADO = localStorage.getItem("usuario_cpf") || "12345678909";
+            // 1. 🛡️ BARREIRA DE SEGURANÇA DA CARTEIRA
+            const CPF_LOGADO = localStorage.getItem("usuario_cpf");
+            if (!CPF_LOGADO) {
+                window.location.href = "/login";
+                return;
+            }
+
             const labelSaldo = document.getElementById("saldo-carteira");
 
-            // Atualiza o saldo buscando do Python usando a variável correta
+            // Atualiza o saldo buscando do Python usando a conta ativa
             fetch("/api/carteira/saldo/" + CPF_LOGADO)
                 .then(res => res.json())
                 .then(dados => {
                     if (dados.sucesso) {
                         labelSaldo.innerText = "R$ " + dados.saldo.toFixed(2).replace('.', ',');
                     }
-                });
-
-            // Lógica corrigida para o botão de gerar depósito via Pix
-                       // SUBSTITUA APENAS A LOGICA DO "btn-gerar-pix" DENTRO DA TAG SCRIPT DO SEU carteira.html
-            document.getElementById("btn-gerar-pix").addEventListener("click", function() {
-                const valor = parseFloat(document.getElementById("valor-deposito").value);
-                
-                fetch("/api/carteira/depositar", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ cpf: CPF_LOGADO, valor: valor })
                 })
-                .then(res => res.json())
-                .then(dados => {
-                    if (dados.sucesso) {
-                        alert("🎉 " + dados.mensagem);
-                        
-                        // Liga a caixinha do Pix e injeta a imagem e o código vindo do Banco Inter
-                        document.getElementById("bloco-visual-pix").style.display = "block";
-                        document.getElementById("img-qrcode-tela").src = dados.qrcode_url;
-                        document.getElementById("input-copia-cola").value = dados.pix_copia_cola;
-                        
-                        // Configura o botão de copiar automático
-                        document.getElementById("btn-copiar-chave").onclick = function() {
-                            navigator.clipboard.writeText(dados.pix_copia_cola);
-                            alert("📋 Código Copia e Cola copiado! Cole no app do seu banco para pagar.");
-                        };
+                .catch(err => console.log("Erro ao carregar saldo: ", err));
+
+            // 2. LÓGICA DO CLIQUE PARA GERAR O PIX COM O BANCO INTER
+            const btnGerarPix = document.getElementById("btn-gerar-pix");
+            if (btnGerarPix) {
+                btnGerarPix.addEventListener("click", function() {
+                    const inputValor = document.getElementById("valor-deposito");
+                    if (!inputValor) return;
+                    
+                    const valor = parseFloat(inputValor.value);
+                    if (!valor || valor <= 0) {
+                        alert("Digite um valor maior que zero para o depósito!");
+                        return;
                     }
+                    
+                    fetch("/api/carteira/depositar", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ cpf: CPF_LOGADO, valor: valor })
+                    })
+                    .then(res => res.json())
+                    .then(dados => {
+                        if (dados.sucesso) {
+                            alert("🎉 " + dados.mensagem);
+                            
+                            // Abre a caixinha que estava oculta na tela
+                            const blocoPix = document.getElementById("bloco-visual-pix");
+                            const imgQrCode = document.getElementById("img-qrcode-tela");
+                            const inputCopiaCola = document.getElementById("input-copia-cola");
+                            
+                            if (blocoPix) blocoPix.style.display = "block";
+                            if (imgQrCode) imgQrCode.src = dados.qrcode_url;
+                            if (inputCopiaCola) inputCopiaCola.value = dados.pix_copia_cola;
+                            
+                            // Configura o botão de copiar automático do código
+                            const btnCopiarChave = document.getElementById("btn-copiar-chave");
+                            if (btnCopiarChave) {
+                                btnCopiarChave.onclick = function() {
+                                    navigator.clipboard.writeText(dados.pix_copia_cola);
+                                    alert("📋 Código Copia e Cola copiado! Cole no app do seu banco para pagar.");
+                                };
+                            }
+                        } else {
+                            alert("❌ Erro ao gerar: " + dados.detail);
+                        }
+                    })
+                    .catch(err => {
+                        console.log("Erro na requisição do Pix: ", err);
+                        alert("Erro ao conectar com o servidor do Pix.");
+                    });
                 });
-            });
+            }
 
-
-            // Lógica do botão de saque
-            document.getElementById("btn-solicitar-saque").addEventListener("click", function() {
-                const chave = document.getElementById("chave-pix").value;
-                const valor = document.getElementById("valor-saque").value;
-                if(!chave || !valor) {
-                    alert("Preencha a chave Pix e o valor para sacar!");
-                    return;
-                }
-                alert("🚀 Pedido de saque enviado! O dinheiro cairá na conta vinculada ao CPF em instantes.");
-            });
+            // 3. LÓGICA DO BOTÃO DE SAQUE
+            const btnSaque = document.getElementById("btn-solicitar-saque");
+            if (btnSaque) {
+                btnSaque.addEventListener("click", function() {
+                    const chave = document.getElementById("chave-pix").value;
+                    const valorSaque = document.getElementById("valor-saque").value;
+                    if(!chave || !valorSaque) {
+                        alert("Preencha a chave Pix e o valor para sacar!");
+                        return;
+                    }
+                    alert("🚀 Pedido de saque enviado! O dinheiro cairá na conta vinculada ao CPF em instantes.");
+                });
+            }
         });
     </script>
-</body>
-</html>
