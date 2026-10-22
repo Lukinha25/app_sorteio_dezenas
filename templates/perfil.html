@@ -183,10 +183,11 @@
                 })
                 .catch(err => console.log("Erro ao buscar bilhetes: ", err));
 
-            // 4. SALVA APENAS AS ALTERAÇÕES DE E-MAIL
+                 // 4. SALVA APENAS AS ALTERAÇÕES DE E-MAIL (CORRIGIDO PARA NÃO TRAVAR O SITE)
             document.getElementById("btn-salvar-perfil").addEventListener("click", function() {
                 const email = labelEmail.value;
-                const srcBruto = labelAvatar.getAttribute("src") || "";
+                                const srcBruto = labelAvatar.getAttribute("src") || "";
+                // Remove o cache (?t=...) de forma segura sem quebrar o link
                 const fotoAtual = srcBruto.split("?")[0];
 
                 fetch("/api/usuarios/perfil/atualizar", {
@@ -197,15 +198,9 @@
                 .then(res => res.json())
                 .then(resposta => {
                     alert("✨ " + resposta.mensagem);
+                    window.location.reload();
                 })
                 .catch(() => alert("Erro ao atualizar e-mail."));
-                            // 🔴 LÓGICA DO BOTÃO DE SAIR (COLE ANTES DO ÚLTIMO }); )
-            document.getElementById("btn-sair-app").addEventListener("click", function() {
-                if(confirm("Tem certeza que deseja sair do aplicativo?")) {
-                    localStorage.removeItem("usuario_cpf"); // Apaga o login da memória do celular
-                    alert("🚪 Você saiu da conta!");
-                    window.location.href = "/login"; // Joga o usuário direto para a tela de login
-                }
             });
 
             });
