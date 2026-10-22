@@ -82,9 +82,11 @@ class FormularioJogo(BaseModel):
     dezenas: list
     id_rodada: int
 
+# GARANTA QUE ESSA CLASSE ESTEJA NO TOPO DO SEU MAIN.PY, LOGO ABAIXO DA CLASSE DE LOGIN
 class FormularioDeposito(BaseModel):
     cpf: str
     valor: float
+
 
 @app.post("/api/usuarios/cadastrar")
 def rota_cadastrar(dados: FormularioCadastro):
